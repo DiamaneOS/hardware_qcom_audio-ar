@@ -1490,8 +1490,6 @@ int AudioDevice::SetParameters(const char *kvpairs) {
     char value[256];
     int pal_device_count = 0;
     pal_device_id_t* pal_device_ids = NULL;
-    char *test_r = NULL;
-    char *cfg_str = NULL;
     bool changes_done = false;
     audio_stream_in* stream_in = NULL;
     audio_stream_out* stream_out = NULL;
@@ -1796,74 +1794,8 @@ int AudioDevice::SetParameters(const char *kvpairs) {
         }
     }
 
-    /* Speaker Protection: Factory Test Mode */
-    ret = str_parms_get_str(parms, "fbsp_cfg_wait_time", value, sizeof(value));
-    if (ret >= 0) {
-        str_parms_del(parms, "fbsp_cfg_wait_time");
-        cfg_str = strtok_r(value, ";", &test_r);
-        if (cfg_str != NULL) {
-            pal_spkr_prot_payload spPayload;
-            spPayload.operationMode = PAL_SP_MODE_FACTORY_TEST;
-            spPayload.spkrHeatupTime = atoi(cfg_str);
-
-            ret = str_parms_get_str(parms, "fbsp_cfg_ftm_time", value, sizeof(value));
-            if (ret >= 0) {
-                str_parms_del(parms, "fbsp_cfg_ftm_time");
-                cfg_str = strtok_r(value, ";", &test_r);
-                if (cfg_str != NULL) {
-                    spPayload.operationModeRunTime = atoi(cfg_str);
-                    ret = pal_set_param(PAL_PARAM_ID_SP_MODE, (void*)&spPayload,
-                                sizeof(pal_spkr_prot_payload));
-                } else {
-                    AHAL_ERR("Unable to parse the FTM time");
-                }
-            } else {
-                AHAL_ERR("Parameter missing for the FTM time");
-            }
-        } else {
-            AHAL_ERR("Unable to parse the FTM wait time");
-        }
-    }
-
-    /* Speaker Protection: V-validation mode */
-    ret = str_parms_get_str(parms, "fbsp_v_vali_wait_time", value, sizeof(value));
-    if (ret >= 0) {
-        str_parms_del(parms, "fbsp_v_vali_wait_time");
-        cfg_str = strtok_r(value, ";", &test_r);
-        if (cfg_str != NULL) {
-            pal_spkr_prot_payload spPayload;
-            spPayload.operationMode = PAL_SP_MODE_V_VALIDATION;
-            spPayload.spkrHeatupTime = atoi(cfg_str);
-
-            ret = str_parms_get_str(parms, "fbsp_v_vali_vali_time", value, sizeof(value));
-            if (ret >= 0) {
-                str_parms_del(parms, "fbsp_v_vali_vali_time");
-                cfg_str = strtok_r(value, ";", &test_r);
-                if (cfg_str != NULL) {
-                    spPayload.operationModeRunTime = atoi(cfg_str);
-                    ret = pal_set_param(PAL_PARAM_ID_SP_MODE, (void*)&spPayload,
-                                sizeof(pal_spkr_prot_payload));
-                } else {
-                    AHAL_ERR("Unable to parse the V_Validation time");
-                }
-            } else {
-                AHAL_ERR("Parameter missing for the V-Validation time");
-            }
-        } else {
-            AHAL_ERR("Unable to parse the V-Validation wait time");
-        }
-    }
-
-    /* Speaker Protection: Dynamic calibration mode */
-    ret = str_parms_get_str(parms, "trigger_spkr_cal", value, sizeof(value));
-    if (ret >= 0) {
-        if ((strcmp(value, "true") == 0) || (strcmp(value, "yes") == 0)) {
-            pal_spkr_prot_payload spPayload;
-            spPayload.operationMode = PAL_SP_MODE_DYNAMIC_CAL;
-            ret = pal_set_param(PAL_PARAM_ID_SP_MODE, (void*)&spPayload,
-                        sizeof(pal_spkr_prot_payload));
-        }
-    }
+    /* The factory speaker protection modes (fbsp_cfg_*, fbsp_v_vali_*,
+     * trigger_spkr_cal) are not accepted. */
 
     ret = str_parms_get_str(parms, AUDIO_PARAMETER_DEVICE_DISCONNECT,
                             value, sizeof(value));
