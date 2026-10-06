@@ -776,7 +776,7 @@ static int astream_get_recommended_latency_modes(struct audio_stream_out *stream
     if (ret) {
         goto exit;
     }
-    AHAL_VERBOSE("max number of latency modes to return: %d, actual number of latency modes %d",
+    AHAL_VERBOSE("max number of latency modes to return: %zu, actual number of latency modes %zu",
           *num_modes, param_latency_mode_ptr->num_modes);
     /*
      * *num_modes as input is maximum number of modes to return.
@@ -1185,7 +1185,7 @@ static void out_update_source_metadata_v7(
         struct playback_track_metadata_v7* track = source_metadata->tracks;
         astream_out->tracks.resize(track_count);
 
-        AHAL_DBG("track count is %d for usecase(%d: %s)",track_count,
+        AHAL_DBG("track count is %ld for usecase(%d: %s)",track_count,
             astream_out->GetUseCase(), use_case_table[astream_out->GetUseCase()]);
 
         astream_out->btSourceMetadata.track_count = track_count;
@@ -1619,7 +1619,7 @@ static void in_update_sink_metadata_v7(
             bool voice_active = false;
             bool voice_mode_active = false;
             if (astream_in->GetUseCase() != USECASE_INVALID) {
-                AHAL_DBG("track count is %d for usecase (%d: %s)", track_count,
+                AHAL_DBG("track count is %ld for usecase (%d: %s)", track_count,
                     astream_in->GetUseCase(), use_case_table[astream_in->GetUseCase()]);
             }
             else {
@@ -2960,7 +2960,7 @@ exit:
             AHAL_VERBOSE("mmap position is %d", position.position_frames);
             signed_frames = position.position_frames -
               (MMAP_PLATFORM_DELAY * (streamAttributes_.out_media_config.sample_rate) / 1000000LL);
-            AHAL_VERBOSE("mmap signed frames %llu", signed_frames);
+            AHAL_VERBOSE("mmap signed frames %lu", signed_frames);
         }
     }
 
@@ -3683,7 +3683,7 @@ ssize_t StreamOutPrimary::splitAndWriteAudioHapticsStream(const void *buffer, si
 
 ssize_t StreamOutPrimary::onWriteError(size_t bytes, ssize_t ret) {
     // standby streams upon write failures and sleep for buffer duration.
-    AHAL_ERR("write error %d usecase(%d: %s)", ret, GetUseCase(), use_case_table[GetUseCase()]);
+    AHAL_ERR("write error %ld usecase(%d: %s)", ret, GetUseCase(), use_case_table[GetUseCase()]);
     Standby();
 
     if (streamAttributes_.type != PAL_STREAM_COMPRESSED) {
@@ -3723,7 +3723,7 @@ ssize_t StreamOutPrimary::configurePalOutputStream() {
         ATRACE_BEGIN("hal: pal_stream_start");
         ret = pal_stream_start(pal_stream_handle_);
         if (ret) {
-            AHAL_ERR("failed to start stream. ret=%d", ret);
+            AHAL_ERR("failed to start stream. ret=%ld", ret);
             pal_stream_close(pal_stream_handle_);
             pal_stream_handle_ = NULL;
             ATRACE_END();
@@ -3744,7 +3744,7 @@ ssize_t StreamOutPrimary::configurePalOutputStream() {
         if (usecase_ == USECASE_AUDIO_PLAYBACK_WITH_HAPTICS) {
             ret = pal_stream_start(pal_haptics_stream_handle);
             if (ret) {
-                AHAL_ERR("failed to start haptics stream. ret=%d", ret);
+                AHAL_ERR("failed to start haptics stream. ret=%ld", ret);
                 ATRACE_END();
                 pal_stream_close(pal_haptics_stream_handle);
                 pal_haptics_stream_handle = NULL;
@@ -3754,7 +3754,7 @@ ssize_t StreamOutPrimary::configurePalOutputStream() {
         if (karaoke) {
             ret = AudExtn.karaoke_start();
             if (ret) {
-                AHAL_ERR("failed to start karaoke stream. ret=%d", ret);
+                AHAL_ERR("failed to start karaoke stream. ret=%ld", ret);
                 AudExtn.karaoke_close();
                 karaoke = false;
                 ret = 0; // Not fatal error
@@ -3794,7 +3794,7 @@ ssize_t StreamOutPrimary::configurePalOutputStream() {
                                        PAL_PARAM_ID_CODEC_CONFIGURATION,
                                        param_payload);
             if (ret) {
-                AHAL_INFO("Pal Set Param for codec configuration failed (%x)", ret);
+                AHAL_INFO("Pal Set Param for codec configuration failed (%lx)", ret);
                 ret = 0;
             }
             free(param_payload);
@@ -3821,7 +3821,7 @@ ssize_t StreamOutPrimary::configurePalOutputStream() {
                                        PAL_PARAM_ID_GAPLESS_MDATA,
                                        param_payload);
             if (ret) {
-                AHAL_INFO("PAL set param for gapless failed, error (%x)", ret);
+                AHAL_INFO("PAL set param for gapless failed, error (%lx)", ret);
                 ret = 0;
             }
             free(param_payload);
@@ -3895,7 +3895,7 @@ ssize_t StreamOutPrimary::write(const void *buffer, size_t bytes)
                      return -EINVAL;
                  }
                  usleep((uint64_t)bytes * 1000000 / frameSize / sampleRate);
-                 AHAL_VERBOSE("BLE suspended; dropped ringtone buffer size - %d", bytes);
+                 AHAL_VERBOSE("BLE suspended; dropped ringtone buffer size - %zu", bytes);
                  goto exit;
             }
         }
@@ -4992,7 +4992,7 @@ int StreamInPrimary::RouteStream(const std::set<audio_devices_t>& new_devices, b
                     strlcpy(mPalInDevice[i].custom_config.custom_key, voip_app_type_, sizeof(mPalInDevice[i].custom_config.custom_key));
                 }
             }
-            AHAL_DBG("SR-info StreamInPrimary::RouteStream %s setting customer voip type and SR : %S", __func__, mPalInDevice[i].custom_config.custom_key);
+            AHAL_DBG("SR-info StreamInPrimary::RouteStream %s setting customer voip type and SR : %s", __func__, mPalInDevice[i].custom_config.custom_key);
 
             /* HDR use case check */
             if ((get_hdr_mode() == AUDIO_RECORD_ARM_HDR) ||
@@ -5411,7 +5411,7 @@ int StreamInPrimary::SetMicMute(bool mute) {
 
 ssize_t StreamInPrimary::onReadError(size_t bytes, size_t ret) {
     // standby streams upon read failures and sleep for buffer duration.
-    AHAL_ERR("read failed %d usecase(%d: %s)", ret, GetUseCase(), use_case_table[GetUseCase()]);
+    AHAL_ERR("read failed %zu usecase(%d: %s)", ret, GetUseCase(), use_case_table[GetUseCase()]);
     Standby();
     uint32_t byteWidth = streamAttributes_.in_media_config.bit_width / 8;
     uint32_t sampleRate = streamAttributes_.in_media_config.sample_rate;
@@ -5485,7 +5485,7 @@ ssize_t StreamInPrimary::read(const void *buffer, size_t bytes) {
         AutoPerfLock perfLock;
         ret = pal_stream_start(pal_stream_handle_);
         if (ret) {
-            AHAL_ERR("failed to start stream. ret=%d", ret);
+            AHAL_ERR("failed to start stream. ret=%ld", ret);
             pal_stream_close(pal_stream_handle_);
             pal_stream_handle_ = NULL;
             goto exit;
@@ -5495,7 +5495,7 @@ ssize_t StreamInPrimary::read(const void *buffer, size_t bytes) {
         if (volume_) {
             ret = pal_stream_set_volume(pal_stream_handle_, volume_);
             if (ret) {
-                AHAL_ERR("Pal Stream volume Error (%x)", ret);
+                AHAL_ERR("Pal Stream volume Error (%lx)", ret);
             }
         }
         /*apply cached mic mute*/
@@ -5518,7 +5518,7 @@ ssize_t StreamInPrimary::read(const void *buffer, size_t bytes) {
     }
 
     ret = pal_stream_read(pal_stream_handle_, &palBuffer);
-    AHAL_VERBOSE("received size= %d",palBuffer.size);
+    AHAL_VERBOSE("received size= %zu",palBuffer.size);
     if (usecase_ == USECASE_AUDIO_RECORD_COMPRESS && ret > 0) {
         size = palBuffer.size;
         (mCompressEncoder->mCompressReadCalls)++;
@@ -5540,7 +5540,7 @@ exit:
     stream_mutex_.unlock();
     clock_gettime(CLOCK_MONOTONIC, &readAt);
     if (usecase_ == USECASE_AUDIO_RECORD_COMPRESS && ret <= 0) {
-        AHAL_ERR("read failure for compress capture: %d", ret);
+        AHAL_ERR("read failure for compress capture: %ld", ret);
         return -ENODEV;
     }
     AHAL_VERBOSE("Exit: returning size: %zu size ", size);
@@ -5833,7 +5833,7 @@ StreamInPrimary::StreamInPrimary(audio_io_handle_t handle,
                 strlcpy(mPalInDevice[i].custom_config.custom_key, voip_app_type_, sizeof(mPalInDevice[i].custom_config.custom_key));
             }
         }
-        AHAL_DBG("StreamInPrimary::StreamInPrimary　setting customer voip type and SR : %S",  mPalInDevice[i].custom_config.custom_key);
+        AHAL_DBG("StreamInPrimary::StreamInPrimary　setting customer voip type and SR : %s",  mPalInDevice[i].custom_config.custom_key);
 
         usecase_ = GetInputUseCase(flags, source);
         if (usecase_ == USECASE_AUDIO_RECORD_LOW_LATENCY ||
