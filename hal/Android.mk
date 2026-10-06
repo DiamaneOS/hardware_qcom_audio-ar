@@ -13,7 +13,9 @@ include $(BUILD_HEADER_LIBRARY)
 
 include $(CLEAR_VARS)
 
-ifeq ($(call is-board-platform-in-list,$(LOCAL_AUDIO_SERVICE_64)), true)
+# Qualcomm's is-board-platform-in-list macro is not defined outside its build
+# tree; match the platform directly.
+ifneq ($(filter $(TARGET_BOARD_PLATFORM),$(LOCAL_AUDIO_SERVICE_64)),)
 ifneq ($(TARGET_BOARD_SUFFIX), _32go)
 LOCAL_MODULE       := android.hardware.audio.service_64.rc
 else
