@@ -36,11 +36,8 @@ LOCAL_MODULE_OWNER := qti
 LOCAL_VENDOR_MODULE := true
 LOCAL_ARM_MODE := arm
 
-LOCAL_VINTF_FRAGMENTS := ../configs/common/manifest_non_qmaa.xml
-
-ifeq ($(strip $(AUDIO_FEATURE_ENABLED_LSM_HIDL)),true)
-LOCAL_VINTF_FRAGMENTS += ../configs/common/manifest_non_qmaa_extn.xml
-endif
+# No VINTF fragment: it would also declare sound trigger and the PAL service.
+# The device manifest declares the services this module registers.
 
 LOCAL_CFLAGS += -Wno-macro-redefined
 LOCAL_CFLAGS += -DSOUND_TRIGGER_PLATFORM_NAME=$(TARGET_BOARD_PLATFORM)
@@ -78,7 +75,6 @@ LOCAL_SRC_FILES := \
 
 LOCAL_HEADER_LIBRARIES := \
     libhardware_headers \
-    qti_audio_kernel_uapi \
     libagm_headers \
     libaudio_extn_headers \
     libagmclient_headers
@@ -123,5 +119,9 @@ ifeq ($(strip $(AUDIO_FEATURE_ENABLED_INSTANCE_ID)), true)
 endif
     LOCAL_SRC_FILES += audio_extn/Gef.cpp
 endif
+
+# As the stock FP6 build: control-flow integrity and the integer overflow
+# sanitizer.
+LOCAL_SANITIZE := cfi integer_overflow
 
 include $(BUILD_SHARED_LIBRARY)
