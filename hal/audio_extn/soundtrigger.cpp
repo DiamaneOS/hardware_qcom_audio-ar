@@ -40,6 +40,7 @@
 #include <dlfcn.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <algorithm>
 #include <cutils/list.h>
 
 #include "AudioCommon.h"
@@ -407,6 +408,10 @@ void audio_extn_sound_trigger_set_parameters(std::shared_ptr<AudioDevice> adev _
         return;
     }
 
+    /* Voice UI keys belong to the sound trigger HAL; without it, ignore them. */
+    if (!st_dev)
+        return;
+
     status = str_parms_get_str(params, VUI_PARAMETER_SET_META_DATA, value, sizeof(value));
     if (status >= 0) {
         pal_set_param(PAL_PARAM_ID_VUI_SET_META_DATA, (void *)value, sizeof(value));
@@ -438,9 +443,15 @@ void audio_extn_sound_trigger_get_parameters(std::shared_ptr<AudioDevice> adev _
         return;
     }
 
+    /* Voice UI keys belong to the sound trigger HAL; without it, ignore them. */
+    if (!st_dev)
+        return;
+
     query_str = str_parms_to_str(query);
-    if (query_str && strstr(query_str, VUI_PARAMETER_GET_META_DATA)) {
-        strlcpy(value, query_str + offset, strlen(query_str) - offset + 1);
+    if (query_str && strstr(query_str, VUI_PARAMETER_GET_META_DATA) &&
+            strlen(query_str) >= offset) {
+        strlcpy(value, query_str + offset,
+                std::min(strlen(query_str) - offset + 1, sizeof(value)));
         status = pal_get_param(PAL_PARAM_ID_VUI_GET_META_DATA, (void **)&str, &payload_sz, nullptr);
         if (!status) {
             str_parms_add_str(reply, VUI_PARAMETER_GET_META_DATA, value);
